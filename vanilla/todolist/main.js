@@ -23,3 +23,17 @@ function itemKeyPress(e){
     }
 }
 
+function debounce(fn, wait) {
+    let timeout;
+    return function () {
+      let context = this;
+      let args = arguments;
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+      timeout = setTimeout(() => {
+        fn.apply(context, args);
+      }, wait);
+    };
+  }
+ window.onscroll = debounce(()=>console.log('scoll'),1000)
