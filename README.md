@@ -201,3 +201,37 @@ function debounce(fn, wait) {
      }
   }
 ```
+### Vue 
+#### 响应式原理 
+
+将数据和DOM更新绑定，在数据变更的时候自动执行DOM的更新操作。 
+实现过程：  
+1. 需要Effect副作用函数
+2. reactive 使用proxy和reflect进行劫持
+3. 劫持后，当数据变更的时候 触发 effect
+4. 深层次的对象，递归 
+
+数据结构 需要 一个 weakmap -> target , map -> name, set -> key , effect 
+
+具体实现 看目录  vue/response-data
+
+#### computed原理 
+
+computed接受两种方式 
+1. 对象，分别传入 getter setter
+2. 函数，会自动获取这个函数内 响应式数据 
+匹配下是哪种模式 
+如果是对象模式 就把getter setter 挂载
+如果是函数模式 设置为只读  
+
+内部保存了一个脏值判断，初始为true。
+如果是true 走一遍执行，计算结果并缓存 ， 将脏值改为false
+在effect副作用函数进行绑定的时候，同时传入了一个调度器，这个调度器包含了dirty的控制。并在 trigger 触发 effect的时候 执行 
+这个时候 脏值就会 变为 true， 再次进入computed逻辑 会执行 重新计算。
+computed 一般用作返回一个缓存结果 （比如派生值的计算总价 总分等等 ）
+
+#### watch & watchEffect
+
+watch 和 computed 不同。 watch 相当于 添加了一个 Effect 副作用函数 ，当这个值 被触发的时候 ，会自动 执行 对应的 effect。 
+传递的参数 控制 执行effect的时机。  immediate 和 deep 和 flush。
+watch一般用作观测，当数据变化的时候 执行一些其他的操作（异步请求 搜索结果等等）。 
