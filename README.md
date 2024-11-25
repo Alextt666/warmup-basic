@@ -2,11 +2,35 @@
 
 复习和查漏补缺一些乱七八糟的小知识
 
+[toc]
+
 ## git
 
+### git 操作相关
 1. commit 不带参数 会进入详情界面描述，:wq 保存并退出
 2. git workflow 创建新分支 -》 alex 提交 申请 合并 -》审查-》 打回 -》 修改 -》 再次提交 -》 确认-》 合并
+ 
+### git 撤销 
+git pull 包含 git fetch 和 git merge 两个操作。
+git revert 生成一个新的提交 来撤回指定提交
+git reset --hard 删除提交到指定hash位置
 
+### git 合并 
+基本概念
+git merge：
+git merge是将一个分支的修改合并到另一个分支。它会创建一个新的合并提交，让分支历史记录能够清晰地显示合并操作的发生。例如，有一个develop分支和一个feature分支，当你想把feature分支的内容合并到develop分支时，使用git merge会在develop分支上创建一个新的合并提交，使得develop分支的历史包含了feature分支的修改。
+git rebase：
+git rebase是一种变基操作。它的目的是将一个分支的提交 “移动” 到另一个分支的最新提交之后，使得提交历史看起来像是在一条直线上进行的开发，而不是像git merge那样产生分支合并的节点。例如，同样对于develop分支和feature分支，使用git rebase可以把feature分支的提交重新排列，让它们看起来像是在develop分支的最新提交之后依次完成的。
+操作后的历史记录呈现
+git merge：
+假设初始有main分支和feature分支，feature分支基于main分支的某个提交点A创建，然后在feature分支上有两个提交B和C。当使用git merge将feature分支合并到main分支时，main分支的历史记录会新增一个合并提交M，历史看起来像这样：A - M（包含B和C的合并）。可以看到，合并后会出现一个新的节点，表示两个分支的合并。
+git rebase：
+还是上述的情况，当使用git rebase将feature分支变基到main分支时，feature分支的提交B和C会被 “复制” 并 “移动” 到main分支的最新提交之后，历史记录看起来像这样：A - B' - C'（原来的B和C变基后）。这里B'和C'是原来B和C提交的副本，经过变基操作后重新排列在main分支的最新提交之后，没有像merge那样产生新的合并节点，使得提交历史更线性。
+合并冲突处理方式
+git merge：
+当git merge过程中出现冲突时，Git 会在工作目录中标记出冲突的文件，需要手动解决这些冲突。例如，两个分支修改了同一个文件的同一行，合并时 Git 会在文件中显示类似<<<<<<< HEAD、=======和>>>>>>> feature - branch的标记，你需要编辑文件来决定保留哪些内容，然后将修改后的文件添加到暂存区（使用git add），最后完成合并提交（使用git commit）。
+git rebase：
+在git rebase过程中出现冲突时，处理方式稍有不同。同样会在文件中标记冲突，但你需要在解决冲突后使用git rebase --continue来继续变基操作。例如，在变基过程中遇到冲突，先解决文件中的冲突，然后添加修改后的文件到暂存区，最后执行git rebase --continue，它会继续处理下一个提交，直到所有提交都完成变基。
 ## oop
 
 1. this 指向，context 和 scope。 context 对应 this 执行的上下文，保存变量的位置信息
@@ -201,8 +225,8 @@ function debounce(fn, wait) {
      }
   }
 ```
-### Vue 
-#### 响应式原理 
+## Vue 
+### 响应式原理 
 
 将数据和DOM更新绑定，在数据变更的时候自动执行DOM的更新操作。 
 实现过程：  
@@ -215,7 +239,7 @@ function debounce(fn, wait) {
 
 具体实现 看目录  vue/response-data
 
-#### computed原理 
+### computed原理 
 
 computed接受两种方式 
 1. 对象，分别传入 getter setter
@@ -230,8 +254,26 @@ computed接受两种方式
 这个时候 脏值就会 变为 true， 再次进入computed逻辑 会执行 重新计算。
 computed 一般用作返回一个缓存结果 （比如派生值的计算总价 总分等等 ）
 
-#### watch & watchEffect
+### watch & watchEffect
 
 watch 和 computed 不同。 watch 相当于 添加了一个 Effect 副作用函数 ，当这个值 被触发的时候 ，会自动 执行 对应的 effect。 
 传递的参数 控制 执行effect的时机。  immediate 和 deep 和 flush。
 watch一般用作观测，当数据变化的时候 执行一些其他的操作（异步请求 搜索结果等等）。 
+
+### nextTick
+先介绍下写法 
+
+```javascript
+// 回调函数的写法 
+nextTick(()=> dosomething )
+// 直接async await
+const send = async ()=>{
+  // ...执行一些操作
+  await nextTick();
+  // ...剩下的操作 
+  // await后面的所有代码 都是异步的了 
+}
+
+```
+
+nextTick的原理 & 源码 其实就是将我们传入的回调放进了一个promise。 这样就会和组件一样进行异步更新
